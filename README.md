@@ -1,5 +1,10 @@
 🌤️ ClimaTrends
 
+<img width="1046" height="636" alt="Image" src="https://github.com/user-attachments/assets/bb3e9f88-8985-48c3-a0dd-0d00993804b4" />
+
+
+<img width="1273" height="957" alt="Image" src="https://github.com/user-attachments/assets/8210e7f2-c8ca-4e99-bc6f-8beab0cf38e9" />
+
 API de monitoramento climático com histórico - Um projeto full-stack desenvolvido com FastAPI, PostgreSQL, Docker e integração com APIs de clima em tempo real.
 
  Funcionalidades:
