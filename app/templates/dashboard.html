@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }} - {{ city }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .search-box {
+            margin: 30px auto;
+            text-align: center;
+        }
+        
+        .search-box input {
+            padding: 15px 25px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 50px;
+            width: 60%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-right: 10px;
+        }
+        
+        .search-box button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .search-box button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        
+        .current-weather {
+            text-align: center;
+            padding: 30px;
+            background: #f8f9fa;
+            margin: 20px;
+            border-radius: 15px;
+            position: relative;
+        }
+        
+        .current-temp {
+            font-size: 4em;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 20px 0;
+        }
+        
+        .weather-icon {
+            position: absolute;
+            right: 30px;
+            top: 30px;
+            font-size: 3em;
+        }
+        
+        .weather-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .weather-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+        
+        .weather-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .weather-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .weather-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4361ee;
+        }
+        
+        .chart-container {
+            padding: 30px;
+            margin: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            border-top: 1px solid #eee;
+        }
+        
+        .footer a {
+            color: #4361ee;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        
+        .alert {
+            background: #ffeb3b;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: #333;
+        }
+        
+        .alert.error {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .alert.success {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .update-time {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌤️ {{ app_name }} Dashboard</h1>
+            <p>Monitoramento climático em tempo real</p>
+        </div>
+        
+        {% if not api_key_configured %}
+        <div class="alert">
+            Configure sua chave da API OpenWeather no arquivo .env
+            <br><small>Obtenha em: https://openweathermap.org/api</small>
+        </div>
+        {% endif %}
+        
+        {% if has_error %}
+        <div class="alert error">
+            Erro ao buscar dados da API. Usando dados de demonstração.
+        </div>
+        {% elif api_key_configured %}
+        <div class="alert success">
+            Conectado à API OpenWeather - Dados em tempo real
+        </div>
+        {% endif %}
+        
+        <div class="search-box">
+            <form method="get" action="/dashboard">
+                <input type="text" name="city" value="{{ city }}" placeholder="Digite uma cidade..." required>
+                <button type="submit"> Buscar Clima</button>
+            </form>
+        </div>
+        
+        <div class="current-weather">
+            <div class="weather-icon">
+                {% if weather_data.icon %}
+                <img src="http://openweathermap.org/img/wn/{{ weather_data.icon }}@2x.png" alt="Ícone do tempo">
+                {% endif %}
+            </div>
+            
+            <h2>{{ city }}{% if weather_data.country %}, {{ weather_data.country }}{% endif %}</h2>
+            <div class="current-temp">{{ weather_data.temperature|round(1) }}°C</div>
+            <p style="font-size: 1.5em; color: #666; margin: 10px 0;">{{ weather_data.description }}</p>
+            <p> Sensação: {{ weather_data.feels_like|round(1) }}°C</p>
+            
+            <div class="update-time">
+                 Atualizado: {{ weather_data.timestamp }}
+            </div>
+        </div>
+        
+        <div class="weather-cards">
+            <div class="weather-card">
+                <h3> Temperatura</h3>
+                <div class="value">{{ weather_data.temperature|round(1) }}°C</div>
+                <small>Atual</small>
+            </div>
+            <div class="weather-card">
+                <h3> Umidade</h3>
+                <div class="value">{{ weather_data.humidity|round(1) }}%</div>
+                <small>Umidade relativa</small>
+            </div>
+            <div class="weather-card">
+                <h3> Pressão</h3>
+                <div class="value">{{ weather_data.pressure }} hPa</div>
+                <small>Pressão atmosférica</small>
+            </div>
+            <div class="weather-card">
+                <h3> Vento</h3>
+                <div class="value">{{ weather_data.wind_speed|round(1) }} m/s</div>
+                <small>Velocidade do vento</small>
+            </div>
+        </div>
+        
+        <div class="chart-container">
+            <h2> Histórico de Temperatura (Simulado)</h2>
+            <canvas id="temperatureChart" width="400" height="200"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <h2> Histórico de Umidade (Simulado)</h2>
+            <canvas id="humidityChart" width="400" height="200"></canvas>
+        </div>
+        
+   
+    </div>
+    
+    <script>
+        // Dados para gráficos - PASSADOS PELO PYTHON
+        const chartTimes = {{ chart_data.times|tojson }};
+        const chartTemperatures = {{ chart_data.temperatures|tojson }};
+        const chartHumidities = {{ chart_data.humidities|tojson }};
+        
+        // Gráfico de Temperatura
+        const tempCtx = document.getElementById('temperatureChart').getContext('2d');
+        new Chart(tempCtx, {
+            type: 'line',
+            data: {
+                labels: chartTimes,
+                datasets: [{
+                    label: 'Temperatura (°C)',
+                    data: chartTemperatures,
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Variação de Temperatura nas últimas horas'
+                    }
+                },
+                scales: {
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Temperatura (°C)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Gráfico de Umidade
+        const humidityCtx = document.getElementById('humidityChart').getContext('2d');
+        new Chart(humidityCtx, {
+            type: 'bar',
+            data: {
+                labels: chartTimes,
+                datasets: [{
+                    label: 'Umidade (%)',
+                    data: chartHumidities,
+                    backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                    borderColor: 'rgba(52, 152, 219, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Variação de Umidade nas últimas horas'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: 'Umidade (%)'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Validação do formulário
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const cityInput = document.querySelector('input[name="city"]');
+            if (!cityInput.value.trim()) {
+                e.preventDefault();
+                alert('Por favor, digite uma cidade!');
+            }
+        });
+        
+        // Auto-refresh a cada 5 minutos (300000 ms)
+        setTimeout(function() {
+            window.location.reload();
+        }, 300000);
+    </script>
+</body>
+</html>

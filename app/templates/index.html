@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ app_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .btn {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px;
+            font-size: 1.1em;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #2980b9;
+        }
+        .btn-primary {
+            background: #2ecc71;
+        }
+        .btn-primary:hover {
+            background: #27ae60;
+        }
+        .center {
+            text-align: center;
+        }
+        .card {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+        }
+        .alert {
+            background: #ffeb3b;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .alert.success {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌤️ {{ app_name }}</h1>
+        <p style="text-align: center; color: #666;">API de monitoramento climático com histórico</p>
+        
+        {% if not api_key_configured %}
+        <div class="alert">
+             Configure sua chave OpenWeather API no arquivo .env para dados reais
+            <br><small>Obtenha em: https://openweathermap.org/api (gratuita)</small>
+        </div>
+        {% else %}
+        <div class="alert success">
+            API OpenWeather configurada - Dados em tempo real
+        </div>
+        {% endif %}
+        
+        <div class="center" style="margin: 40px 0;">
+            <a href="/dashboard?city=São Paulo" class="btn btn-primary">
+                Dashboard 
+            </a>
+        </div>
+        
+        <div class="card">
+            <h2> Como testar:</h2>
+            <ol>
+                <li>Clique em qualquer cidade acima para ver o dashboard</li>
+                <li>Use a barra de busca para qualquer cidade do mundo</li>
+                <li>Se vir "Dados de demonstração", configure sua chave OpenWeather no .env</li>
+            </ol>
+        </div>
+        
+    </div>
+</body>
+</html>
